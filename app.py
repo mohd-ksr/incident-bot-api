@@ -2,6 +2,7 @@ import os
 import google.generativeai as genai
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 # Load environment variables
@@ -17,6 +18,15 @@ model = genai.GenerativeModel("gemini-1.5-flash")
 
 # FastAPI app
 app = FastAPI()
+
+# ✅ Enable CORS so frontend can call API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # you can restrict to ["http://localhost:5500"] later
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Request body model
 class IncidentRequest(BaseModel):
