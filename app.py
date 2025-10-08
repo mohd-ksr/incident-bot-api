@@ -14,7 +14,11 @@ if not api_key:
 
 # Configure Gemini
 genai.configure(api_key=api_key)
-model = genai.GenerativeModel("gemini-1.5-flash")
+
+# ✅ Use a currently supported model name
+# 'gemini-2.0-flash' and 'gemini-1.5-pro' are valid as of Oct 2025
+MODEL_NAME = "gemini-2.0-flash"
+model = genai.GenerativeModel(MODEL_NAME)
 
 # FastAPI app
 app = FastAPI()
@@ -32,6 +36,7 @@ app.add_middleware(
 class IncidentRequest(BaseModel):
     situation: str
 
+
 def classify_incident(user_input: str):
     prompt = f"""
     You are an Incident Classification Bot.
@@ -41,11 +46,11 @@ def classify_incident(user_input: str):
     Incident Priority Supplies...
 
     Rules:
-    - Incident must be ONE word (e.g., Flood, Accident, Fire, Earthquake, Medical, Crime, Other)
+    - Incident must be ONE word (e.g., Flood, Fire, Accident, Earthquake, Medical, Crime, Other)
     - Priority must be ONE word (High, Medium, or Low)
     - Supplies can be ONE or MORE words (space-separated), e.g., "Water Ambulance Extinguisher".
     - Do NOT add any explanation, only output the three fields.
-    - Always respond in ENGLISH, even if the input is in Hindi or in any laguages.
+    - Always respond in ENGLISH, even if the input is in Hindi or any other language.
 
     Examples:
     "A massive flood destroyed homes" → Flood High Water Boat Shelter
@@ -59,15 +64,22 @@ def classify_incident(user_input: str):
 
     Situation: "{user_input}"
     """
-    response = model.generate_content(prompt)
-    result = response.text.strip()
 
+    try:
+        response = model.generate_content(prompt)
+        result = response.text.strip()
+    except Exception as e:
+        print("❌ Error from Gemini API:", e)
+        return "Other", "Low", "None"
+
+    # Parse model response safely
     parts = result.split(maxsplit=2)
     if len(parts) < 3:
         return "Other", "Low", "None"
 
     incident, priority, supplies = parts[0], parts[1], parts[2]
-    return incident, priority, supplies
+    return incident.capitalize(), priority.capitalize(), supplies.title()
+
 
 # API route
 @app.post("/classify")
@@ -79,7 +91,7 @@ def classify(req: IncidentRequest):
         "supplies": supplies
     }
 
+
 @app.get("/")
 def home():
-    return {"message": "🚨 Incident Classification Bot API is running!"}
-
+    return {"message": f"🚨 Incident Classification Bot API is running with {MODEL_NAME}!"}
