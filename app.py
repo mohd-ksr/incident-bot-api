@@ -41,11 +41,11 @@ def classify_incident(user_input: str):
     Incident Priority Supplies...
 
     Rules:
-    - Incident must be ONE word (e.g., Flood, Fire, Earthquake, Medical, Crime, Other)
+    - Incident must be ONE word (e.g., Flood, Accident, Fire, Earthquake, Medical, Crime, Other)
     - Priority must be ONE word (High, Medium, or Low)
     - Supplies can be ONE or MORE words (space-separated), e.g., "Water Ambulance Extinguisher".
     - Do NOT add any explanation, only output the three fields.
-    - Always respond in ENGLISH, even if the input is in Hindi.
+    - Always respond in ENGLISH, even if the input is in Hindi or in any laguages.
 
     Examples:
     "A massive flood destroyed homes" → Flood High Water Boat Shelter
@@ -82,3 +82,4 @@ def classify(req: IncidentRequest):
 @app.get("/")
 def home():
     return {"message": "🚨 Incident Classification Bot API is running!"}
+
